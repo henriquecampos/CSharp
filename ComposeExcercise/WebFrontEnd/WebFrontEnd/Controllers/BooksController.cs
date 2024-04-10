@@ -13,7 +13,7 @@ namespace WebFrontEnd.Controllers
     public class BooksController : Controller
     {
         HttpClient Client = new();
-        private string BaseUri = $"http://localhost:61157/API/Books";
+        private readonly string _baseUri;
 
         private readonly ILogger<BooksController> _logger;
 
@@ -24,9 +24,10 @@ namespace WebFrontEnd.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public BooksController(ILogger<BooksController> logger)
+        public BooksController(ILogger<BooksController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _baseUri = configuration.GetValue<string>("Settings:ApiUrl")!;
         }
 
         public async Task<IActionResult> Index(List<BookDTO>? booksDto)
@@ -66,7 +67,7 @@ namespace WebFrontEnd.Controllers
             // Call *mywebapi*, and display its response in the page
             var request = new System.Net.Http.HttpRequestMessage();
             // webapi is the container name
-            request.RequestUri = new Uri("http://webapi/Books");
+            request.RequestUri = new Uri($"{_baseUri}/api/Books");
             var response = await client.SendAsync(request);
             await using Stream stream = await response.Content.ReadAsStreamAsync();
             var books = await JsonSerializer.DeserializeAsync<List<Book>>(stream);
